@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mesas Parrilla 51</title>
+  <style>
+    /* ==================== ESTILOS GENERALES ==================== */
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #3a3a3a; /* Gris oscuro */
+      color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ==================== NAVBAR ==================== */
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #2f2f2f;
+      padding: 12px 30px;
+      color: #fff;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 22px;
+      font-weight: bold;
+      color: #ff4444; /* Rojo */
+    }
+
+    .logo img {
+      height: 40px;
+    }
+
+    .nav-links {
+      list-style: none;
+      display: flex;
+      gap: 25px;
+      margin: 0;
+      padding: 0;
+    }
+
+    .nav-links li {
+      cursor: pointer;
+      font-weight: bold;
+      color: #fff;
+      transition: color 0.3s;
+    }
+
+    .nav-links li a {
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .nav-links li a:hover {
+      color: #ffd700; /* Dorado */
+    }
+
+    /* ==================== BOTONES ==================== */
+    button,
+    a.btn {
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .zona-btn {
+      background: #ffd700;
+      color: #000;
+      border: none;
+      font-size: 16px;
+      margin: 20px 0;
+    }
+
+    .zona-btn:hover {
+      background: #e6b800;
+    }
+
+    /* ==================== GRID DE MESAS ==================== */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);  /* Establece 7 columnas */
+      gap: 15px;
+      padding: 20px;
+      max-width: 1000px;  /* Ajusta el tamaño según sea necesario */
+      margin: auto;
+    }
+
+
+    .mesa {
+      background: #2f2f2f;
+      border-radius: 8px;
+      padding: 30px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      transition: transform 0.2s, background 0.2s, border-color 0.3s;
+      border: 2px solid #ffd700;
+    }
+
+    .mesa:hover {
+      background: #444;
+      transform: scale(1.05);
+      border-color: #ff4444;
+    }
+
+    .mesa.seleccionada {
+      background: #555;
+      border-color: #ff4444;
+    }
+
+    /* ==================== ÓRDENES (cards) ==================== */
+    .ordenes-container {
+      padding: 20px;
+    }
+
+    .ordenes-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    .card {
+      background: #4a4a4a;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+      transition: transform 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+    }
+
+    .card h4 {
+      margin: 0 0 10px;
+      color: #ffd700;
+    }
+
+    .estado.pendiente {
+      background: #f1c40f;
+      color: #333;
+    }
+
+    .estado.entregado {
+      background: #2ecc71;
+      color: #fff;
+    }
+
+    /* ==================== FORMULARIO ==================== */
+    .formulario {
+      background: #4a4a4a;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    .formulario h2 {
+      text-align: center;
+      background: #ff4444;
+      color: #fff;
+      padding: 8px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+
+    .formulario label {
+      font-weight: bold;
+      margin: 10px 0 5px;
+    }
+
+    .formulario input,
+    .formulario select {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #ffd700;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      outline: none;
+    }
+
+    .formulario input:focus,
+    .formulario select:focus {
+      border-color: #ff4444;
+    }
+
+    .btn-enviar {
+      background: #ffd700;
+      color: #000;
+      border: none;
+      font-size: 16px;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .btn-enviar:hover {
+      background: #e6b800;
+    }
+
+    /* ==================== FOOTER ==================== */
+    footer {
+      text-align: center;
+      padding: 15px;
+      background-color: #2f2f2f;
+      color: #f0f0f0;
+      margin-top: 40px;
+      border-top: 2px solid #ffd700;
+    }
+
+    .zona {
+      display: flex;
+      justify-content: center; /* Centra horizontal */
+      align-items: center;     /* Centra vertical (si tiene altura) */
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+
+    <nav class="navbar">
+    <div class="logo">
+        <img src="{{ url_for('static', filename='img/logooo.png') }}" alt="Logo">
+        <span>Parrilla 51</span>
+    </div>
+
+    <ul class="nav-links">
+        <li><a href="{{ url_for('mesas_empleado') }}">Mesas</a></li>
+        <li><a href="{{ url_for('registrar_empleado') }}">Registrar</a></li>
+        <li><a href="{{ url_for('ordenes_empleado') }}">Órdenes</a></li>
+        <li><a href="{{ url_for('reservas_empleado') }}">Reservas</a></li>
+    </ul>
+
+    </nav>
+
+
+
+  <!-- BOTONES DE ZONA -->
+  <div class="zona">
+    <button class="zona-btn">Zona 1</button>
+  </div>
+
+  <!-- GRID DE MESAS -->
+  <div class="grid" id="mesasGrid"></div>
+
+  <script>
+    const mesasGrid = document.getElementById('mesasGrid');
+
+    for (let i = 1; i <= 21; i++) {
+      const mesa = document.createElement('div');
+      mesa.className = 'mesa';
+      mesa.textContent = i;
+
+      mesa.onclick = () => {
+        window.location.href = `/orden/${i}`;
+      };
+
+      mesasGrid.appendChild(mesa);
+    }
+  </script>
+
+</body>
+</html>

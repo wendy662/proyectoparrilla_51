@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Carrito</title>
+    <style>
+        body { font-family: "Segoe UI", Tahoma, sans-serif; background: #3a3a3a; color: #fff; margin: 0; }
+        .container { max-width: 800px; margin: 40px auto; background: #2f2f2f; padding: 25px; border-radius: 10px; }
+        h2 { text-align: center; color: #ffd700; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: center; border-bottom: 1px solid #444; }
+        th { background: #444; }
+        button { padding: 10px; background: #ff4444; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
+        button:hover { background: #cc0000; }
+        .confirmar { margin-top: 20px; padding: 12px; width: 100%; background: #ffd700; color: #000; font-weight: bold; border-radius: 6px; cursor: pointer; }
+        .confirmar:hover { background: #e0b800; }
+        a.volver { display: block; margin-top: 20px; text-align: center; color: #ff4444; text-decoration: none; }
+        .opciones { margin-top: 20px; }
+        .opciones label { margin-right: 20px; }
+
+        #seleccion-mesa {
+        display: flex;
+        align-items: center;
+        gap: 10px; 
+        margin-top: 10px;
+        }
+
+        #seleccion-mesa label {
+            white-space: nowrap; 
+            font-weight: bold;
+        }
+
+        #seleccion-mesa select {
+            flex: 0.5; 
+            padding: 5px;
+            border-radius: 6px;
+            border: none;
+            background: #444;
+            color: #fff;
+            text-align: center;
+            border: 2px solid #f1d638c8;
+        }
+
+        #domicilio input {
+        width: 80%; 
+        max-width: 400px;
+        padding: 10px;
+        margin-top: 5px;
+        margin-bottom: 10px;
+        border-radius: 6px;
+        border: 2px solid #f1d638c8; 
+        background: #444;
+        color: white;
+        font-size: 14px;
+    }
+
+        #domicilio label {
+        font-weight: bold;
+        display: block;
+        margin-top: 10px;
+        color: #ffd700;
+    }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🛒 Tu Carrito</h2>
+        {% if carrito %}
+        <form method="POST" action="{{ url_for('hacer_pedido') }}">
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio</th>
+                        <th>Subtotal</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in carrito %}
+                    <tr>
+                        <td>{{ item.nombre }}</td>
+                        <td>{{ item.cantidad }}</td>
+                        <td>${{ "{:,.0f}".format(item.precio).replace(",", ".") }}</td>
+                        <td>${{ "{:,.0f}".format(item.precio * item.cantidad).replace(",", ".") }}</td>
+                        <td>
+                            <a href="{{ url_for('eliminar_carrito', id_producto=item.id_producto) }}">
+                                <button type="button">❌</button>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <h3>Total: ${{ "{:,.0f}".format(total).replace(",", ".") }}</h3>
+            
+            <div style="margin-top: 15px;">
+            <label><input type="radio" name="tipo_entrega" value="mesa" checked onchange="mostrarCampos()"> Comer en Mesa</label>
+            <label><input type="radio" name="tipo_entrega" value="domicilio" onchange="mostrarCampos()"> Domicilio</label>
+    </div>
+
+<!-- Select de mesas (si elige mesa) -->
+<div id="seleccion-mesa">
+    <br><label for="cod_mesa">Selecciona Mesa</label></br>
+    <select name="cod_mesa">
+        <option value="">-- Selecciona una mesa --</option>
+        {% for mesa in mesas %}
+            <option value="{{ mesa.id_mesa }}">Mesa {{ mesa.numero }} - Capacidad: {{ mesa.capacidad }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+    <!--datos del domicilio-->
+    <div id="datos-domicilio" style="display: none; margin-top: 10px;">
+        <label for="direccion">🏠 Dirección de entrega</label>
+        <p><input type="text" name="direccion" id="direccion" placeholder="Calle 123 #45-67"></p>
+        <label for="telefono_envio">📞 Teléfono de contacto</label>
+        <p><input type="tel" name="telefono_envio" id="telefono_envio" pattern="[0-9]{10}" placeholder="Ej: 3112345678"></p>
+    </div>
+
+    <!-- Método de pago -->
+    <div class="opciones">
+        <h4>💳 Método de pago</h4>
+        <label>
+            <input type="radio" name="metodo_pago" value="efectivo" checked>
+            Efectivo
+        </label>
+        <label>
+            <input type="radio" name="metodo_pago" value="nequi">
+            Nequi
+        </label>
+    </div>
+
+            <button type="submit" class="confirmar">Confirmar Pedido</button>
+        </form>
+        {% else %}
+        <p>Tu carrito está vacío.</p>
+        {% endif %}
+        <a href="{{ url_for('cliente_dashboard') }}" class="volver">⬅ Volver</a>
+    </div>
+
+    <!--El codigo js-->
+   <!-- ✅ SweetAlert2 (ventanas animadas) -->
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+<script>
+  function mostrarCampos() {
+    const tipo = document.querySelector('input[name="tipo_entrega"]:checked').value;
+    const seleccionMesa = document.getElementById("seleccion-mesa");
+    const datosDomicilio = document.getElementById("datos-domicilio");
+
+    if (tipo === "mesa") {
+      seleccionMesa.style.display = "flex";
+      datosDomicilio.style.display = "none";
+      document.getElementById("direccion").value = "";
+      document.getElementById("telefono_envio").value = "";
+      document.getElementById("direccion").removeAttribute("required");
+      document.getElementById("telefono_envio").removeAttribute("required");
+    } else {
+      seleccionMesa.style.display = "none";
+      datosDomicilio.style.display = "block";
+      document.getElementById("direccion").setAttribute("required", true);
+      document.getElementById("telefono_envio").setAttribute("required", true);
+    }
+  }
+
+  const form = document.querySelector("form");
+  const carritoContainer = document.querySelector(".container");
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault(); // 👈 evita el envío inmediato
+
+    const filas = document.querySelectorAll("tbody tr");
+    const total = document.querySelector("h3").innerText.replace("Total: ", "");
+    const tipoEntrega = document.querySelector('input[name="tipo_entrega"]:checked').value === "mesa" ? "En mesa" : "Domicilio";
+
+    if (filas.length === 0) {
+      Swal.fire('Carrito vacío', 'No tienes productos en el carrito', 'warning');
+      return;
+    }
+
+    let resumen = `<strong>${filas.length}</strong> ${filas.length === 1 ? "producto" : "productos"}<br>`;
+    resumen += `<strong>Total:</strong> ${total}<br>`;
+    resumen += `<strong>Entrega:</strong> ${tipoEntrega}`;
+
+    // 🪄 SweetAlert2 ventana elegante de confirmación
+    Swal.fire({
+      title: '¿Confirmar pedido?',
+      html: resumen,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: '✅ Finalizar',
+      cancelButtonText: '❌ Cancelar',
+      background: '#2f2f2f',
+      color: '#fff',
+      confirmButtonColor: '#ffd700',
+      cancelButtonColor: '#ff4444',
+      showClass: {
+        popup: 'animate__animated animate__zoomIn'
+      },
+      hideClass: {
+        popup: 'animate__animated animate__zoomOut'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        enviarPedido();
+      }
+    });
+  });
+
+  function enviarPedido() {
+    const formData = new FormData(form);
+
+    // ⏳ Mostrar animación de carga mientras se envía
+    Swal.fire({
+      title: 'Procesando...',
+      text: 'Guardando tu pedido',
+      icon: 'info',
+      background: '#2f2f2f',
+      color: '#fff',
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    fetch(form.action, {
+      method: "POST",
+      body: formData
+    })
+    .then(res => {
+      if (res.ok) {
+        // 🎉 Mostrar ventana final sin redirigir
+        Swal.fire({
+          title: '🎉 ¡Pedido realizado!',
+          text: 'Tu pedido se ha guardado exitosamente',
+          icon: 'success',
+          background: '#2f2f2f',
+          color: '#fff',
+          confirmButtonColor: '#ffd700',
+          showClass: {
+            popup: 'animate__animated animate__fadeInDown'
+          },
+          hideClass: {
+            popup: 'animate__animated animate__fadeOutUp'
+          }
+        }).then(() => {
+          vaciarCarritoUI();
+        });
+      } else {
+        Swal.fire('Error', 'Hubo un problema al guardar el pedido', 'error');
+      }
+    })
+    .catch(() => {
+      Swal.fire('Error', 'No se pudo conectar con el servidor', 'error');
+    });
+  }
+
+  // 🧹 Vaciar visualmente el carrito sin redirigir
+  function vaciarCarritoUI() {
+    const tbody = document.querySelector('tbody');
+    tbody.innerHTML = ''; // limpia filas
+    document.querySelector('h3').innerText = 'Total: $0';
+
+    // Ocultamos formulario y mostramos mensaje vacío
+    form.style.display = "none";
+
+    const mensajeVacio = document.createElement("p");
+    mensajeVacio.innerText = "Tu carrito está vacío 🛒";
+    mensajeVacio.style.textAlign = "center";
+    mensajeVacio.style.fontSize = "18px";
+    mensajeVacio.style.marginTop = "20px";
+
+    carritoContainer.appendChild(mensajeVacio);
+  }
+</script>
+
+
+
+
+<!-- ✅ Animaciones de SweetAlert2 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+</body>
+</html>

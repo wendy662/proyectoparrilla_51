@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reservas</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #3a3a3a;
+      color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ==================== NAVBAR ==================== */
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #2f2f2f;
+      padding: 12px 30px;
+      color: #fff;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 22px;
+      font-weight: bold;
+      color: #ff4444; /* Rojo */
+    }
+
+    .logo img {
+      height: 40px;
+    }
+
+    .nav-links {
+      list-style: none;
+      display: flex;
+      gap: 25px;
+      margin: 0;
+      padding: 0;
+    }
+
+    .nav-links li {
+      cursor: pointer;
+      font-weight: bold;
+      color: #fff;
+      transition: color 0.3s;
+    }
+
+    .nav-links li a {
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .nav-links li a:hover {
+      color: #ffd700; /* Dorado */
+    }
+
+    .btn-success {
+      background-color: #ffd700;
+      color: #000;
+      border: none;
+      font-weight: bold;
+    }
+
+    .btn-success:hover {
+      background-color: #e6b800;
+      color: #000;
+    }
+
+    .btn-danger {
+      background-color: #ff4444;
+      color: #fff;
+      border: none;
+      font-weight: bold;
+    }
+
+    .btn-danger:hover {
+      background-color: #e63b3b;
+    }
+
+    .card {
+      background-color: #2f2f2f;
+      color: #f0f0f0;
+      border-radius: 8px;
+      border: 1px solid #ffd700;
+    }
+
+    .card .card-title {
+      color: #ffd700;
+    }
+
+    .card .card-text b {
+      color: #ffd700;
+    }
+
+    .badge {
+      font-weight: bold;
+    }
+
+    .modal-content {
+      background-color: #2f2f2f;
+      color: #f0f0f0;
+      border-radius: 10px;
+    }
+
+    .modal-header {
+      border-bottom: 1px solid #ffd700;
+    }
+
+    .modal-footer {
+      border-top: 1px solid #ffd700;
+    }
+
+    .modal-title {
+      color: #ffd700;
+    }
+
+    .form-control,
+    .form-select,
+    textarea {
+      background-color: #4a4a4a;
+      color: #f0f0f0;
+      border: 1px solid #ffd700;
+    }
+
+    .form-control:focus,
+    .form-select:focus,
+    textarea:focus {
+      border-color: #ff4444;
+      box-shadow: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav class="navbar">
+    <div class="logo">
+      <img src="{{ url_for('static', filename='img/logooo.png') }}" alt="Logo">
+      <span>Parrilla 51</span>
+    </div>
+
+    <ul class="nav-links">
+      <li><a href="{{ url_for('mesas_empleado') }}">Mesas</a></li>
+      <li><a href="{{ url_for('registrar_empleado') }}">Registrar</a></li>
+      <li><a href="{{ url_for('ordenes_empleado') }}">Órdenes</a></li>
+      <li><a href="{{ url_for('reservas_empleado') }}">Reservas</a></li>
+    </ul>
+  </nav>
+
+  <div class="container mt-4">
+    <h3 class="text-center mb-3">Reservas</h3>
+
+    <div class="row">
+      {% for res in reservas %}
+        <div class="col-md-4">
+          <div class="card shadow-sm p-2 mb-3">
+            <div class="card-body">
+              <h5 class="card-title">Reserva #{{ res.id_reservas }}</h5>
+              <p class="card-text">
+                <b>Fecha:</b> {{ res.fecha }}<br>
+                <b>Hora:</b> {{ res.hora }}<br>
+                <b>Cant. Personas:</b> {{ res.cant_personas }}<br>
+                <b>Mesa:</b> {{ res.cod_mesas }}<br>
+                <b>Estado:</b> {{ res.estado }}
+              </p>
+              
+              <div class="d-flex justify-content-between mt-2">
+                <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditar{{ loop.index0 }}">Editar</button>
+                <a href="{{ url_for('eliminar_reserva', id_reserva=res.id_reserva) }}" class="btn btn-danger btn-sm">Eliminar</a>
+                <a href="{{ url_for('cambiar_estado_empleado', id_reserva=res.id_reserva, cod_mesa=res.cod_mesa or 'X') }}"
+                  class="btn 
+                  {% if res.estado == 'disponible' %}btn-warning
+                  {% elif res.estado == 'no disponible' %}btn-success
+                  {% else %}btn-secondary{% endif %}
+                  btn-sm">
+                  {{ res.estado }}
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Editar -->
+        <div class="modal fade" id="modalEditar{{ loop.index0 }}" tabindex="-1">
+          <div class="modal-dialog">
+            <form action="{{ url_for('editar_reserva', id=res.id_reserva) }}" method="POST" class="modal-content p-3">
+              <div class="modal-header">
+                <h5 class="modal-title">Editar Reserva</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+
+                <label class="form-label">Fecha</label>
+                <input type="date" class="form-control mb-3" name="fecha" value="{{ res.fecha }}">
+
+                <label class="form-label">Hora</label>
+                <input type="time" class="form-control mb-3" name="hora" value="{{ res.hora }}">
+
+                <label class="form-label">Cantidad de personas</label>
+                <input type="number" class="form-control mb-3" name="cant_personas" value="{{ res.cant_personas }}">
+
+                <label class="form-label">Código de mesa</label>
+                <input type="text" class="form-control mb-3" name="cod_mesa" value="{{ res.cod_mesas }}">
+
+                <label class="form-label">Estado</label>
+                <select class="form-select mb-3" name="estado">
+                  <option value="disponible" {% if res.estado=='disponible' %}selected{% endif %}>Disponible</option>
+                  <option value="no disponible" {% if res.estado=='no disponible' %}selected{% endif %}>No Disponible</option>
+                </select>
+
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-success">Guardar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+      {% endfor %}
+    </div>
+
+    <!-- Botón agregar reserva -->
+    <button class="btn btn-danger mt-3 w-100" data-bs-toggle="modal" data-bs-target="#modalAgregar">+ Agregar Reserva</button>
+
+  </div>
+
+  <!-- Modal Agregar -->
+  <div class="modal fade" id="modalAgregar" tabindex="-1">
+    <div class="modal-dialog">
+      <form action="{{ url_for('agregar_reserva') }}" method="POST" class="modal-content p-3">
+        <div class="modal-header">
+          <h5 class="modal-title">Nueva Reserva</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+
+          <label class="form-label">Fecha</label>
+          <input type="date" class="form-control mb-3" name="fecha" required>
+
+          <label class="form-label">Hora</label>
+          <input type="time" class="form-control mb-3" name="hora" required>
+
+          <label class="form-label">Cantidad de personas</label>
+          <input type="number" class="form-control mb-3" name="cant_personas" required>
+
+          <label class="form-label">Código de mesa</label>
+          <input type="text" class="form-control mb-3" name="cod_mesa" required>
+
+          <label class="form-label">Estado</label>
+          <select class="form-select mb-3" name="estado" required>
+            <option value="disponible">Disponible</option>
+            <option value="no disponible">No Disponible</option>
+          </select>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-success">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

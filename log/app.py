@@ -1152,5 +1152,401 @@ def eliminar_carrito(id_producto):
 # Ejecuta la app en modo debug (útil durante desarrollo)
 
 
+#--------------------EMPLEADOOOOO----------------------
+
+@app.route("/testdb")
+def testdb():
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("SHOW TABLES;")   # consulta las tablas de tu BD
+        tables = cur.fetchall()
+        cur.close()
+        return f"✅ Conectado. Tablas en la BD: {tables}"
+    except Exception as e:
+        return f"❌ Error conectando a MySQL: {str(e)}"
+
+# ================== RUTAS EMPLEADO ==================
+from flask import Flask, render_template, request, redirect, url_for
+import mysql.connector
+
+app = Flask(__name__)
+
+# 📌 Conexión a la BD
+conexion = mysql.connector.connect(
+    host="localhost",
+    user="root",          # <-- cambia si tu usuario es distinto
+    password="",          # <-- tu clave aquí
+    database="parrilla51"
+)
+cursor = conexion.cursor(dictionary=True)  # <-- devuelve diccionarios {columna: valor}
+from flask import Flask, render_template, request, redirect, url_for
+import mysql.connector
+
+app = Flask(__name__)
+from flask import Flask, render_template, request, redirect, url_for
+import mysql.connector
+
+app = Flask(__name__)
+
+from flask import Flask, render_template, request, redirect, url_for
+import mysql.connector
+
+app = Flask(__name__)
+from flask import Flask, render_template, request, redirect, url_for
+import mysql.connector
+
+from flask import Flask, render_template, request, redirect, url_for, jsonify
+import mysql.connector
+
+app = Flask(__name__)
+
+# ===================== CONEXIÓN =====================
+def get_db_connection():
+    return mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="",
+        database="parrilla51"
+    )
+
+
+# ===================== LISTAR PRODUCTOS Y CATEGORÍAS =====================
+@app.route("/registrar_empleado")
+def registrar_empleado():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT id_categoria, nombre_categoria FROM categorias")
+    categorias = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT p.id_producto, p.nombre, p.precio, p.descripcion, c.nombre_categoria
+        FROM productos_empleados p
+        JOIN categorias c ON p.id_categoria = c.id_categoria
+    """)
+    productos = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template("registrar_empleado.html", productos=productos, categorias=categorias)
+
+
+# ===================== AGREGAR CATEGORÍA =====================
+@app.route("/agregar_categoria", methods=["POST"])
+def agregar_categoria():
+    nombre_categoria = request.form["nombre_categoria"]
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO categorias (nombre_categoria) VALUES (%s)", (nombre_categoria,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return redirect(url_for("registrar_empleado"))
+
+
+# ===================== EDITAR CATEGORÍA =====================
+@app.route("/editar_categoria/<int:id_categoria>", methods=["POST"])
+def editar_categoria(id_categoria):
+    nombre_categoria = request.form["nombre_categoria"]
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE categorias SET nombre_categoria=%s WHERE id_categoria=%s",
+        (nombre_categoria, id_categoria)
+    )
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return redirect(url_for("registrar_empleado"))
+
+
+# ===================== AGREGAR PRODUCTO =====================
+@app.route("/agregar_producto", methods=["POST"])
+def agregar_producto():
+    nombre = request.form["nombre"]
+    precio = request.form["precio"]
+    descripcion = request.form["descripcion"]
+    id_categoria = request.form["id_categoria"]
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO productos_empleados (nombre, precio, descripcion, id_categoria)
+        VALUES (%s, %s, %s, %s)
+    """, (nombre, precio, descripcion, id_categoria))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return redirect(url_for("registrar_empleado"))
+
+
+# ===================== EDITAR PRODUCTO =====================
+@app.route("/editar_producto/<int:id_producto>", methods=["POST"])
+def editar_producto(id_producto):
+    nombre = request.form["nombre"]
+    precio = request.form["precio"]
+    descripcion = request.form["descripcion"]
+    id_categoria = request.form["id_categoria"]
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE productos_empleados
+        SET nombre=%s, precio=%s, descripcion=%s, id_categoria=%s
+        WHERE id_producto=%s
+    """, (nombre, precio, descripcion, id_categoria, id_producto))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return redirect(url_for("registrar_empleado"))
+
+
+# ===================== ELIMINAR CATEGORÍA =====================
+@app.route("/eliminar_categoria/<int:id_categoria>")
+def eliminar_categoria(id_categoria):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM categorias WHERE id_categoria = %s", (id_categoria,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return redirect(url_for("registrar_empleado"))
+
+
+# ===================== ELIMINAR PRODUCTO =====================
+@app.route("/eliminar_producto/<int:id_producto>")
+def eliminar_producto(id_producto):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM productos_empleados WHERE id_producto = %s", (id_producto,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return redirect(url_for("registrar_empleado"))
+
+
+# ===================== CALCULADORA =====================
+@app.route("/calculadora")
+def calculadora():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT * FROM categorias")
+    categorias = cursor.fetchall()
+
+    cursor.execute("SELECT * FROM productos_empleados")
+    productos = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template("calculadora.html", categorias=categorias, productos=productos)
+
+
+# ===================== MESAS Y ORDENES =====================
+@app.route('/mesas_empleado')
+def mesas_empleado():
+    return render_template('mesas_empleado.html')
+
+
+@app.route('/orden/<int:mesa_id>', methods=['GET', 'POST'])
+def orden_mesa(mesa_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == 'POST':
+        productos_seleccionados = request.form.getlist('producto')
+        total = request.form.get('total', 0)
+        tipo_entrega = request.form.get('tipo_entrega', 'restaurante')
+        telefono = request.form.get('telefono', '')
+        metodo_pago = request.form.get('metodo_pago', 'efectivo')
+
+        cursor2 = conn.cursor()
+        for producto_id in productos_seleccionados:
+            cursor2.execute("""
+                INSERT INTO pedidos (tipo_entrega, cod_mesa, fecha_pedi, hora_pedi, metodo_pago, telefono, total, estado, cod_usuario)
+                VALUES (%s, %s, CURDATE(), CURTIME(), %s, %s, %s, %s, %s)
+            """, (tipo_entrega, mesa_id, metodo_pago, telefono, total, 'pendiente', 0))
+
+        conn.commit()
+        cursor2.close()
+        cursor.close()
+        conn.close()
+        return redirect(url_for('mesas_empleado'))
+
+    cursor.execute("SELECT * FROM categorias")
+    categorias = cursor.fetchall()
+
+    cursor.execute("SELECT * FROM productos_empleados")
+    productos = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template('calculadora.html', mesa=mesa_id, categorias=categorias, productos=productos)
+
+
+# ===================== RESERVAS =====================
+@app.route("/reservas_empleado")
+def reservas_empleado():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM reservas ORDER BY fecha, hora")
+    reservas = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return render_template("reservas_empleado.html", reservas=reservas)
+
+
+@app.route("/agregar_reserva", methods=["POST"])
+def agregar_reserva():
+    fecha = request.form["fecha"]
+    hora = request.form["hora"]
+    cant_personas = request.form["cant_personas"]
+    estado = request.form.get("estado", "disponible")
+    cod_mesa = request.form["cod_mesa"]
+    telefono = request.form["telefono"]
+    id_usuario = request.form["id_usuario"]
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO reservas (fecha, hora, cant_personas, estado, cod_mesa, telefono, id_usuario)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+    """, (fecha, hora, cant_personas, estado, cod_mesa, telefono, id_usuario))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return redirect(url_for("reservas_empleado"))
+
+
+@app.route("/eliminar_reserva/<int:id_reservas>")
+def eliminar_reserva(id_reservas):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM reservas WHERE id_reservas = %s", (id_reservas,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return redirect(url_for("reservas_empleado"))
+
+
+@app.route('/editar_reserva/<int:id>', methods=['POST'])
+def editar_reserva(id):
+    fecha = request.form.get("fecha")
+    hora = request.form.get("hora")
+    cant_personas = request.form.get("cant_personas")
+    estado = request.form.get("estado")
+    cod_mesa = request.form.get("cod_mesa")
+    telefono = request.form.get("telefono")
+    id_usuario = request.form.get("id_usuario")
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE reservas 
+        SET fecha=%s, hora=%s, cant_personas=%s, estado=%s, cod_mesa=%s, telefono=%s, id_usuario=%s
+        WHERE id_reserva=%s
+    """, (fecha, hora, cant_personas, estado, cod_mesa, telefono, id_usuario, id))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return redirect(url_for('reservas_empleado'))
+
+
+@app.route('/cambiar_estado/<int:id_reservas>')
+def cambiar_estado(id_reservas):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT estado FROM reservas WHERE id_reservas=%s", (id_reservas,))
+    result = cursor.fetchone()
+    if result:
+        estado_actual = result[0]
+        nuevo_estado = "no disponible" if estado_actual == "disponible" else "disponible"
+        cursor.execute("UPDATE reservas SET estado=%s WHERE id_reservas=%s", (nuevo_estado, id_reservas))
+        conn.commit()
+    cursor.close()
+    conn.close()
+    return redirect(url_for('reservas_empleado'))
+
+
+# ===================== ORDENES REGISTRADAS =====================
+@app.route('/ordenes_empleado')
+def ordenes_empleado():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM pedidos ORDER BY fecha_pedi, hora_pedi")
+    ordenes = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return render_template("ordenes_empleado.html", ordenes=ordenes)
+
+
+@app.route("/eliminar_orden/<int:id_pedido>")
+def eliminar_orden(id_pedido):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM pedidos WHERE id_pedido = %s", (id_pedido,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return redirect(url_for("ordenes_empleado"))
+
+
+# ===================== API JSON =====================
+@app.route("/get_categorias")
+def get_categorias():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT id_categoria, nombre_categoria FROM categorias")
+    categorias = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return jsonify(categorias)
+
+
+@app.route("/get_productos/<int:id_categoria>")
+def get_productos(id_categoria):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT id_producto, nombre, precio
+        FROM productos_empleados
+        WHERE id_categoria = %s
+    """, (id_categoria,))
+    productos = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return jsonify(productos)
+
+
+# ===================== TEST DB =====================
+@app.route("/testdb")
+def testdb():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SHOW TABLES;")
+        tables = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return f"✅ Conectado. Tablas: {tables}"
+    except Exception as e:
+        return f"❌ Error conectando a MySQL: {str(e)}"
+
+
+# ===================== MAIN =====================
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000, threaded=True)
+

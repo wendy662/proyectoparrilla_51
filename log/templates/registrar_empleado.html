@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrar Productos y Categorías</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #3a3a3a;
+      color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+    }
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #2f2f2f;
+      padding: 12px 30px;
+      color: #fff;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 22px;
+      font-weight: bold;
+      color: #ff4444;
+    }
+    .logo img { height: 40px; }
+    .nav-links {
+      list-style: none;
+      display: flex;
+      gap: 25px;
+      margin: 0;
+      padding: 0;
+    }
+    .nav-links li a { color: #fff; text-decoration: none; }
+    .nav-links li a:hover { color: #ffd700; }
+    .btn-success { background-color: #ffd700; color: #000; border: none; font-weight: bold; }
+    .btn-success:hover { background-color: #e6b800; }
+    .btn-primary { background-color: #ff4444; color: #fff; border: none; font-weight: bold; }
+    .btn-primary:hover { background-color: #e63b3b; }
+    .btn-warning { color: #000; }
+    .list-group-item {
+      background-color: #4a4a4a;
+      color: #f0f0f0;
+      border: 1px solid #ffd700;
+      margin-bottom: 5px;
+      border-radius: 6px;
+    }
+    .modal-content { background-color: #2f2f2f; color: #f0f0f0; border-radius: 10px; }
+    .modal-title { color: #ffd700; }
+    .form-control, .form-select, textarea {
+      background-color: #4a4a4a;
+      color: #f0f0f0;
+      border: 1px solid #ffd700;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="logo">
+      <img src="{{ url_for('static', filename='img/logooo.png') }}" alt="Logo">
+      <span>Parrilla 51</span>
+    </div>
+    <ul class="nav-links">
+      <li><a href="{{ url_for('mesas_empleado') }}">Mesas</a></li>
+      <li><a href="{{ url_for('registrar_empleado') }}">Registrar</a></li>
+      <li><a href="{{ url_for('ordenes_empleado') }}">Órdenes</a></li>
+      <li><a href="{{ url_for('reservas_empleado') }}">Reservas</a></li>
+    </ul>
+  </nav>
+
+  <!-- CONTENIDO -->
+  <div class="container my-4">
+    <div class="row">
+      <!-- CATEGORÍAS -->
+      <div class="col-6 border-end">
+        <h4 class="text-center mb-3">Categorías</h4>
+        <ul id="listaCategorias" class="list-group mb-3">
+          {% for c in categorias %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            {{ c.nombre_categoria }}
+            <div>
+              <a href="{{ url_for('eliminar_categoria', id_categoria=c.id_categoria) }}" class="btn btn-danger btn-sm">Eliminar</a>
+              <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditarCategoria{{ c.id_categoria }}">Editar</button>
+            </div>
+          </li>
+
+          <!-- Modal Editar Categoría -->
+          <div class="modal fade" id="modalEditarCategoria{{ c.id_categoria }}" tabindex="-1">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <form method="POST" action="{{ url_for('editar_categoria', id_categoria=c.id_categoria) }}">
+                  <div class="modal-header">
+                    <h5 class="modal-title">Editar Categoría</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div class="modal-body">
+                    <input type="text" name="nombre_categoria" class="form-control" value="{{ c.nombre_categoria }}" required>
+                  </div>
+                  <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Guardar cambios</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </ul>
+        <button class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#modalCategoria">
+          + Agregar Categoría
+        </button>
+      </div>
+
+      <!-- PRODUCTOS -->
+      <div class="col-6">
+        <h4 class="text-center mb-3">Productos</h4>
+        <ul id="listaProductos" class="list-group mb-3">
+          {% for p in productos %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            {{ p.nombre }} - ${{ p.precio }} [{{ p.nombre_categoria }}]
+            <div>
+              <a href="{{ url_for('eliminar_producto', id_producto=p.id_producto) }}" class="btn btn-danger btn-sm">Eliminar</a>
+              <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditarProducto{{ p.id_producto }}">Editar</button>
+            </div>
+          </li>
+
+          <!-- Modal Editar Producto -->
+          <div class="modal fade" id="modalEditarProducto{{ p.id_producto }}" tabindex="-1">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <form method="POST" action="{{ url_for('editar_producto', id_producto=p.id_producto) }}">
+                  <div class="modal-header">
+                    <h5 class="modal-title">Editar Producto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="mb-2">
+                      <label>Nombre</label>
+                      <input type="text" name="nombre" class="form-control" value="{{ p.nombre }}" required>
+                    </div>
+                    <div class="mb-2">
+                      <label>Precio</label>
+                      <input type="number" step="0.01" name="precio" class="form-control" value="{{ p.precio }}" required>
+                    </div>
+                    <div class="mb-2">
+                      <label>Descripción</label>
+                      <textarea name="descripcion" class="form-control">{{ p.descripcion }}</textarea>
+                    </div>
+                    <div class="mb-2">
+                      <label>Categoría</label>
+                      <select name="id_categoria" class="form-select">
+                        {% for c in categorias %}
+                        <option value="{{ c.id_categoria }}" {% if c.nombre_categoria == p.nombre_categoria %}selected{% endif %}>
+                          {{ c.nombre_categoria }}
+                        </option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Guardar cambios</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </ul>
+        <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#modalProducto">
+          + Agregar Producto
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CATEGORÍA NUEVA -->
+  <div class="modal fade" id="modalCategoria" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="POST" action="{{ url_for('agregar_categoria') }}">
+          <div class="modal-header">
+            <h5 class="modal-title">Nueva Categoría</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <input type="text" name="nombre_categoria" class="form-control" placeholder="Nombre de la categoría" required>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-success">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PRODUCTO NUEVO -->
+  <div class="modal fade" id="modalProducto" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="POST" action="{{ url_for('agregar_producto') }}">
+          <div class="modal-header">
+            <h5 class="modal-title">Nuevo Producto</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-2">
+              <label>Nombre del producto</label>
+              <input type="text" name="nombre" class="form-control" required>
+            </div>
+            <div class="mb-2">
+              <label>Precio</label>
+              <input type="number" step="0.01" name="precio" class="form-control" required>
+            </div>
+            <div class="mb-2">
+              <label>Descripción</label>
+              <textarea name="descripcion" class="form-control"></textarea>
+            </div>
+            <div class="mb-2">
+              <label>Categoría</label>
+              <select name="id_categoria" class="form-select" required>
+                {% for c in categorias %}
+                <option value="{{ c.id_categoria }}">{{ c.nombre_categoria }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-success">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
